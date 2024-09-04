@@ -9,6 +9,13 @@ function ProtectedRoute({ children }) {
     return <Navigate to="/?sign-in=true" />;
   }
 
+  if (
+    user !== undefined &&
+    !user?.unsafeMetadata?.role &&
+    pathname !== "/onboarding"
+  ) {
+    return <Navigate to="/onboarding" />;
+  }
   // check onboaeding status
   return children;
 }
