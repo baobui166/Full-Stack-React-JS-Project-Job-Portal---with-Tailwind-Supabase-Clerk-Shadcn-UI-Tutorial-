@@ -1,4 +1,4 @@
-import { getSigleJob, updateHiringStatus } from "@/apis/apiJobs";
+import { getSingleJob, updateHiringStatus } from "@/apis/apiJobs";
 import useFetch from "@/hooks/use-fetch";
 import { useUser } from "@clerk/clerk-react";
 import { Briefcase, DoorClosed, DoorOpen, MapPinIcon } from "lucide-react";
@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import ApplyJob from "@/components/ui/ApplyJob";
+import ApplicationCard from "@/components/ApplicationCard";
 
 function JobPage() {
   const { user, isLoaded } = useUser();
@@ -23,7 +24,7 @@ function JobPage() {
     fn: fnJob,
     data: job,
     loading: loadingJob,
-  } = useFetch(getSigleJob, { job_id: id });
+  } = useFetch(getSingleJob, { job_id: id });
 
   const { fn: fnUpdateJob, loading: loadingUpdateJob } = useFetch(
     updateHiringStatus,
@@ -36,6 +37,8 @@ function JobPage() {
     const isOpen = value === "open";
     fnUpdateJob(isOpen).then(() => fnJob());
   };
+
+  console.log(job);
 
   useEffect(() => {
     if (isLoaded) fnJob();
@@ -52,7 +55,6 @@ function JobPage() {
         </h1>
         <img src={job?.company?.logo_url} alt={job?.title} className="h-12" />
       </div>
-
       <div className="flex justify-between">
         <div className="flex gap-2 items-center">
           <MapPinIcon />
@@ -75,15 +77,10 @@ function JobPage() {
           )}{" "}
         </div>
       </div>
-
       {/* hiring status */}
-
       {loadingUpdateJob && <BarLoader width={"100%"} color="#36d7b7" />}
       {job?.recruiter_id === user?.id && (
-        <Select
-          value={location}
-          onValueChange={(value) => handleStatusChange(value)}
-        >
+        <Select onValueChange={(value) => handleStatusChange(value)}>
           <SelectTrigger
             className={`w-full text-white ${
               job?.isOpen ? "bg-green-950" : "bg-red-950"
@@ -109,9 +106,7 @@ function JobPage() {
         source={job?.requirements}
         className="bg-transparent sm:text-lg"
       />
-
       {/* render application */}
-
       {job?.recruiter_id !== user?.id && (
         <ApplyJob
           job={job}
@@ -119,6 +114,16 @@ function JobPage() {
           fetchJob={fnJob}
           applied={job?.applications?.find((ap) => ap.recruiter_id === user.id)}
         />
+      )}
+      {job?.applications?.length > 0 && job?.recruiter_id === user.id && (
+        <div className="flex flex-col gap-2">
+          <h2 className="text-2xl sm:text-3xl font-bold">Applications</h2>
+          {job?.applications?.map((application) => {
+            return (
+              <ApplicationCard key={application.id} application={application} />
+            );
+          })}
+        </div>
       )}
     </div>
   );

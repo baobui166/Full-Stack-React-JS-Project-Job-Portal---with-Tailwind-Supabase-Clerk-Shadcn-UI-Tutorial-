@@ -1,29 +1,48 @@
 import supabaseClient, { supabaseUrl } from "@/utils/supabase";
 
-export async function getApplications(token, jobData) {
+export async function getApplications(token, _, jobData) {
   const supabase = await supabaseClient(token);
 
   const random = Math.floor(Math.random() * 90000);
-  const fileName = `resume-$${random}-${jobData.candidate_id}`;
+  const fileName = `resume-${random}-${jobData.candidate_id}`;
 
   const { error: storageError } = await supabase.storage
     .from("resumes")
-    .update(fileName, jobData.resume);
+    .upload(fileName, jobData.resume);
+
+  if (storageError) throw new Error("Error uploading Resume");
 
   const resume = `${supabaseUrl}/storage/v1/object/public/resumes/${fileName}`;
 
-  const { data, error: getApplicationsError } = await supabase
+  const { data, error } = await supabase
     .from("applications")
-    .insert([{ ...jobData, resume }])
+    .insert([
+      {
+        ...jobData,
+        resume,
+      },
+    ])
     .select();
 
-  if (getApplicationsError) {
-    console.error("Error submitting applications: ", getApplicationsError);
-    return null;
+  if (error) {
+    console.error(error);
+    throw new Error("Error submitting Application");
   }
 
-  if (storageError) {
-    console.error("Error Uploading reume: ", storageError);
+  return data;
+}
+
+export async function updateApplication(token, { job_id }, status) {
+  const supabase = await supabaseClient(token);
+
+  const { data, error: updatingError } = await supabase
+    .from("applications")
+    .update({ status })
+    .eq("job_id", job_id)
+    .select("*");
+
+  if (updatingError || data.length === 0) {
+    console.error("Have a error updating application: ", updatingError);
     return null;
   }
 

@@ -69,7 +69,7 @@ export async function saveJob(token, { alreadySaved }, saveData) {
   // return data;
 }
 
-export async function getSigleJob(token, { job_id }) {
+export async function getSingleJob(token, { job_id }) {
   const supabase = await supabaseClient(token);
   const { data, error: getJobError } = await supabase
     .from("jobs")
