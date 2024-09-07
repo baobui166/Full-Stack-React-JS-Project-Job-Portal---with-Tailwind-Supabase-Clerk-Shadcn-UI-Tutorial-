@@ -26,14 +26,18 @@ function ApplicationCard({ application, isCandidate } = false) {
     link.click();
   };
 
-  const { fn: fnUpdating, loading: loadingUpdating } = useFetch(
+  console.log(application.status);
+
+  const { fn: fnUpdatingStatus, loading: loadingUpdating } = useFetch(
     updateApplication,
     {
       job_id: application.job_id,
     }
   );
 
-  const handleStatusChange = (status) => {};
+  const handleStatusChange = (status) => {
+    fnUpdatingStatus(status).then(() => fnUpdatingStatus());
+  };
 
   return (
     <Card>
@@ -45,14 +49,14 @@ function ApplicationCard({ application, isCandidate } = false) {
             : application?.name}
           <Download
             size={18}
-            className="bg-white text-black rounded-full  h-8 p-1.5 cursor-pointer"
+            className="bg-white text-black rounded-full w-8 h-8 p-1.5 cursor-pointer"
             onClick={handleDownload}
           />
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-1 flex-1">
         <div className="flex flex-col md:flex-row justify-between">
-          <div className="flex  gap-2 items-center">
+          <div className="flex gap-2 items-center">
             <BriefcaseBusiness size={15} />
             {application?.experience} years of experience{" "}
           </div>
@@ -71,21 +75,21 @@ function ApplicationCard({ application, isCandidate } = false) {
         <span>{new Date(application?.created_at).toLocaleString()}</span>
         {isCandidate ? (
           <span className="capitalize font-bold">
-            Status: {application?.status}
+            Status: {application.status}
           </span>
         ) : (
           <Select
-            onValueChange={(value) => handleStatusChange(value)}
             defaultValue={application.status}
+            onValueChange={handleStatusChange}
           >
             <SelectTrigger className="w-52">
               <SelectValue placeholder="Application Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="open">Applied</SelectItem>
-              <SelectItem value="closed">Interviewing</SelectItem>
-              <SelectItem value="closed">Hired</SelectItem>
-              <SelectItem value="closed">Rejected</SelectItem>
+              <SelectItem value="Applied">Applied</SelectItem>
+              <SelectItem value="Interviewing">Interviewing</SelectItem>
+              <SelectItem value="Hired">Hired</SelectItem>
+              <SelectItem value="Rejected">Rejected</SelectItem>
             </SelectContent>
           </Select>
         )}
