@@ -32,41 +32,32 @@ export async function saveJob(token, { alreadySaved }, saveData) {
   const supabase = await supabaseClient(token);
 
   if (alreadySaved) {
+    // If the job is already saved, remove it
     const { data, error: deleteError } = await supabase
       .from("saved_jobs")
       .delete()
       .eq("job_id", saveData.job_id);
 
     if (deleteError) {
-      console.error("Error Deleting Saved Jobs:", deleteError);
-      return null;
+      console.error("Error removing saved job:", deleteError);
+      return data;
     }
 
     return data;
   } else {
-    const { data, error: inserError } = await supabase
+    // If the job is not saved, add it to saved jobs
+    const { data, error: insertError } = await supabase
       .from("saved_jobs")
       .insert([saveData])
       .select();
 
-    if (inserError) {
-      console.error("Error Inserting Saved Jobs:", inserError);
-      return null;
+    if (insertError) {
+      console.error("Error saving job:", insertError);
+      return data;
     }
 
     return data;
   }
-
-  // const { data, error } = await supabase
-  //   .from("jobs")
-  //   .select("*, company: companies(name, logo_url), saved:saved_jobs(id)");
-
-  // if (error) {
-  //   console.error("Error fetching jobs:", error);
-  //   return null;
-  // }
-
-  // return data;
 }
 
 export async function getSingleJob(token, { job_id }) {
@@ -110,6 +101,38 @@ export async function addNewJob(token, _, jobData) {
 
   if (insertJobError) {
     console.error("Error updating Job: ", insertJobError);
+  }
+
+  return data;
+}
+
+// Delete job
+export async function deleteJob(token, { job_id }) {
+  const supabase = await supabaseClient(token);
+
+  const { data, error: deleteError } = await supabase
+    .from("jobs")
+    .delete()
+    .eq("id", job_id)
+    .select();
+
+  if (deleteError) {
+    console.error("Error deleting job:", deleteError);
+    return data;
+  }
+
+  return data;
+}
+
+export async function getSavedJobs(token) {
+  const supabase = await supabaseClient(token);
+  const { data, error } = await supabase
+    .from("saved_jobs")
+    .select("*, job:jobs(*, company: companies(name, logo_url))");
+
+  if (error) {
+    console.error("Error getting saved Job: ", error);
+    return null;
   }
 
   return data;
