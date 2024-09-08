@@ -23,7 +23,9 @@ const JobListing = () => {
   const [location, setLocation] = useState("");
   const [company_id, setCompany_id] = useState("");
 
-  const { isLoaded } = useUser();
+  const { isLoaded, user } = useUser();
+
+  console.log(user?.unsafeMetadata?.role);
 
   const {
     // loading: loadingCompanies,
